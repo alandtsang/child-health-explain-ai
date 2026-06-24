@@ -1,5 +1,3 @@
-import { randomUUID } from "node:crypto";
-
 import {
   CHILD_GROWTH_STANDARD_VERSION,
   ageInYears,
@@ -37,9 +35,13 @@ function metricValue(metrics: readonly ConfirmedMetric[], key: ConfirmedMetric["
   return metrics.find((metric) => metric.key === key)?.value;
 }
 
+function ruleId(checkupId: string, type: RuleEvaluation["type"]): string {
+  return `${checkupId}:rule:${type}`;
+}
+
 function unable(checkupId: string, type: RuleEvaluation["type"], department: string): RuleEvaluation {
   return {
-    id: randomUUID(),
+    id: ruleId(checkupId, type),
     checkupId,
     type,
     level: "unable_to_evaluate",
@@ -64,7 +66,7 @@ export function evaluateCheckupRules(checkup: CheckupForRules, at: Date = new Da
   } else {
     const level = evaluateBmiLevel(checkup.childSex, ageYears, heightCm, weightKg);
     results.push({
-      id: randomUUID(),
+      id: ruleId(checkup.id, "overweight_obesity"),
       checkupId: checkup.id,
       type: "overweight_obesity",
       level,
@@ -81,7 +83,7 @@ export function evaluateCheckupRules(checkup: CheckupForRules, at: Date = new Da
   } else {
     const level = evaluateHeightLevel(checkup.childSex, ageYears, heightCm);
     results.push({
-      id: randomUUID(),
+      id: ruleId(checkup.id, "growth_delay"),
       checkupId: checkup.id,
       type: "growth_delay",
       level,
@@ -98,7 +100,7 @@ export function evaluateCheckupRules(checkup: CheckupForRules, at: Date = new Da
   } else {
     const level = evaluateVisionLevel(ageYears, leftVision, rightVision);
     results.push({
-      id: randomUUID(),
+      id: ruleId(checkup.id, "vision_abnormality"),
       checkupId: checkup.id,
       type: "vision_abnormality",
       level,

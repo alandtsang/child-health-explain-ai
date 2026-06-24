@@ -48,6 +48,7 @@ const evaluationDate = new Date("2026-06-24T08:00:00.000Z");
 describe("evaluateCheckupRules", () => {
   it("returns one deterministic evaluation for each supported abnormality", () => {
     const results = evaluateCheckupRules(baseCheckup, evaluationDate);
+    const repeatedResults = evaluateCheckupRules(baseCheckup, evaluationDate);
 
     expect(results).toHaveLength(3);
     expect(results.map((item) => item.type)).toEqual([
@@ -55,6 +56,7 @@ describe("evaluateCheckupRules", () => {
       "growth_delay",
       "vision_abnormality"
     ]);
+    expect(repeatedResults).toEqual(results);
   });
 
   it("flags overweight or obesity from BMI for a 6-year-old child", () => {
