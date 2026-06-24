@@ -25,10 +25,37 @@ const bands: Record<Sex, BmiBand[]> = {
   ]
 };
 
-export function ageInYears(birthDate: string, at: Date): number {
-  const birth = new Date(`${birthDate}T00:00:00.000Z`);
+export function ageInYears(birthDate: string, at: Date): number | undefined {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(birthDate);
+  if (!match) return undefined;
 
-  return Math.floor((at.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+  const [, yearText, monthText, dayText] = match;
+  const birthYear = Number(yearText);
+  const birthMonth = Number(monthText);
+  const birthDay = Number(dayText);
+  const birth = new Date(Date.UTC(birthYear, birthMonth - 1, birthDay));
+  if (
+    birth.getUTCFullYear() !== birthYear ||
+    birth.getUTCMonth() !== birthMonth - 1 ||
+    birth.getUTCDate() !== birthDay
+  ) {
+    return undefined;
+  }
+
+  const atYear = at.getUTCFullYear();
+  const atMonth = at.getUTCMonth() + 1;
+  const atDay = at.getUTCDate();
+  if (
+    birthYear > atYear ||
+    (birthYear === atYear && birthMonth > atMonth) ||
+    (birthYear === atYear && birthMonth === atMonth && birthDay > atDay)
+  ) {
+    return undefined;
+  }
+
+  const hadBirthdayThisYear = atMonth > birthMonth || (atMonth === birthMonth && atDay >= birthDay);
+
+  return atYear - birthYear - (hadBirthdayThisYear ? 0 : 1);
 }
 
 function findBand(sex: Sex, ageYears: number): BmiBand | undefined {
