@@ -18,6 +18,7 @@ export async function registerCheckupRoutes(app: FastifyInstance, store: MemoryS
       if (error instanceof ZodError) {
         return reply.code(400).send({
           error: "validation_error",
+          message: error.message,
           issues: error.issues
         });
       }
@@ -40,7 +41,8 @@ export async function registerCheckupRoutes(app: FastifyInstance, store: MemoryS
 
     if (!checkup) {
       return reply.code(404).send({
-        error: "not_found"
+        error: "not_found",
+        message: "Checkup not found"
       });
     }
 

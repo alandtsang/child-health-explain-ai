@@ -73,6 +73,15 @@ describe("createCheckup", () => {
     expect(store.auditLogs.map((entry) => entry.action)).toEqual(["checkup.created", "rules.evaluated"]);
     expect(store.auditLogs.map((entry) => entry.entityId)).toEqual([result.checkup.id, result.checkup.id]);
     expect(store.auditLogs.every((entry) => entry.createdAt === confirmedAt)).toBe(true);
+    expect(store.auditLogs[1]?.payload).toEqual({
+      count: 3,
+      summaries: result.ruleEvaluations.map((ruleEvaluation) => ({
+        type: ruleEvaluation.type,
+        level: ruleEvaluation.level,
+        standardVersion: ruleEvaluation.standardVersion
+      })),
+      ruleEvaluationIds: result.ruleEvaluations.map((ruleEvaluation) => ruleEvaluation.id)
+    });
   });
 
   it("returns a validation error for invalid confirmed metrics", () => {
@@ -95,6 +104,78 @@ describe("createCheckup", () => {
 });
 
 describe("checkup routes", () => {
+  it("creates a checkup and returns three rule evaluations", async () => {
+    const app = await buildApp(createMemoryStore());
+
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/checkups",
+        payload: validRequest
+      });
+
+      expect(response.statusCode).toBe(201);
+      expect(response.json()).toMatchObject({
+        checkup: {
+          childName: validRequest.childName,
+          source: validRequest.source,
+          metrics: validRequest.metrics,
+          ocrFields: []
+        },
+        ruleEvaluations: expect.arrayContaining([
+          expect.objectContaining({ type: "overweight_obesity" }),
+          expect.objectContaining({ type: "growth_delay" }),
+          expect.objectContaining({ type: "vision_abnormality" })
+        ])
+      });
+      expect(response.json().ruleEvaluations).toHaveLength(3);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns a created checkup by id", async () => {
+    const app = await buildApp(createMemoryStore());
+
+    try {
+      const createResponse = await app.inject({
+        method: "POST",
+        url: "/checkups",
+        payload: validRequest
+      });
+      const created = createResponse.json();
+
+      const response = await app.inject({
+        method: "GET",
+        url: `/checkups/${created.checkup.id}`
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual(created.checkup);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns 404 with a useful error shape for missing checkups", async () => {
+    const app = await buildApp(createMemoryStore());
+
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/checkups/checkup_missing"
+      });
+
+      expect(response.statusCode).toBe(404);
+      expect(response.json()).toEqual({
+        error: "not_found",
+        message: "Checkup not found"
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
   it("returns 400 instead of 500 for invalid checkup intake requests", async () => {
     const app = await buildApp(createMemoryStore());
 
@@ -111,6 +192,29 @@ describe("checkup routes", () => {
       expect(response.statusCode).toBe(400);
       expect(response.json()).toMatchObject({
         error: "validation_error"
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns a normalized validation error for malformed JSON", async () => {
+    const app = await buildApp(createMemoryStore());
+
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/checkups",
+        headers: {
+          "content-type": "application/json"
+        },
+        payload: "{"
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toEqual({
+        error: "validation_error",
+        message: expect.any(String)
       });
     } finally {
       await app.close();

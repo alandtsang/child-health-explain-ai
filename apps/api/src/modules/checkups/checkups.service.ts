@@ -32,6 +32,12 @@ export function createCheckup(store: MemoryStore, input: unknown, at: Date = new
     action: "rules.evaluated",
     entityId: checkup.id,
     payload: {
+      count: ruleEvaluations.length,
+      summaries: ruleEvaluations.map((ruleEvaluation) => ({
+        type: ruleEvaluation.type,
+        level: ruleEvaluation.level,
+        standardVersion: ruleEvaluation.standardVersion
+      })),
       ruleEvaluationIds: ruleEvaluations.map((ruleEvaluation) => ruleEvaluation.id)
     },
     at
