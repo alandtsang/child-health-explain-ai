@@ -1,4 +1,4 @@
-import type { AiReportDraft, CheckupRecord, DoctorReview } from "@child-health/contracts";
+import type { AiReportDraft, CheckupRecord, DoctorReview, FollowUpTask } from "@child-health/contracts";
 
 import type { RuleEvaluation } from "../modules/rules/rules.service.js";
 
@@ -10,14 +10,12 @@ export type AuditLog = {
   createdAt: string;
 };
 
-type PlaceholderRecord = Record<string, unknown>;
-
 export type MemoryStore = {
   checkups: CheckupRecord[];
   ruleEvaluations: RuleEvaluation[];
   aiDrafts: AiReportDraft[];
   doctorReviews: DoctorReview[];
-  followUps: PlaceholderRecord[];
+  followUps: FollowUpTask[];
   auditLogs: AuditLog[];
 };
 
