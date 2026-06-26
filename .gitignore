@@ -1,4 +1,9 @@
+# IDE
+.trae/
+.idea/
+
 .superpowers/
 node_modules/
 dist/
 packages/*/src/*.js
+.pnpm-store/

@@ -1,53 +1,53 @@
 # child-health-explain-ai
 
-AI child checkup report MVP for turning pediatric checkup data into doctor-reviewed, parent-friendly explanations.
+AI 儿童体检报告 MVP，将儿科体检数据转化为经医生审核、家长易懂的解释说明。
 
-## What This Is
+## 是什么
 
-This project combines a deterministic rule core with an AI expression layer:
+该项目将确定性规则核心与人工智能表达层相结合：
 
-- The rule core identifies abnormal findings from structured child checkup data.
-- The AI expression layer turns those rule-backed findings into clearer report language for parents and doctors.
+- 规则核心从结构化的儿童体检数据中识别出异常发现。
+- 人工智能表达层将这些基于规则的发现转化为更清晰、易于理解的报告语言，供家长和医生使用。
 
-## MVP Features
+## MVP 功能
 
-- Doctor and parent entry points.
-- Manual intake and OCR-confirmed intake flows.
-- Three abnormality rule categories for checkup interpretation.
-- Parent-facing report and poster generation.
-- Doctor review workflow before sharing interpreted results.
-- Follow-up reminders for continued care.
+- 医生和家长的入口界面。
+- 手动录入与OCR确认录入流程。
+- 用于体检结果解读的三类异常规则。
+- 面向家长的报告及海报生成功能。
+- 在共享解读结果前的医生审核工作流。
+- 持续护理的随访提醒功能。
 
-## Development
+## 开发
 
-Use Node 18+ for local development. Node 22 is recommended, and this repository's verification environment uses Node 22.
+本地开发请使用 Node 18 及以上版本。推荐使用 Node 22，本仓库的验证环境也采用 Node 22。
 
-Install dependencies:
+安装依赖项：
 
 ```sh
 pnpm install
 ```
 
-Run the API locally:
+在本地运行 API：
 
 ```sh
 pnpm dev:api
 ```
 
-Run type checks:
+运行类型检查：
 
 ```sh
 pnpm typecheck
 ```
 
-Run tests:
+运行测试：
 
 ```sh
 pnpm test
 ```
 
-## Mini Program
+## 小程序
 
-The WeChat mini program source lives in `apps/miniprogram`.
+微信小程序源码位于 `apps/miniprogram`。
 
-Open `apps/miniprogram` with WeChat Developer Tools to run and inspect the mini program client.
+使用微信开发者工具打开 `apps/miniprogram`，以运行和调试小程序客户端。
