@@ -47,6 +47,11 @@ const validRequest = {
   ]
 } as const;
 
+const unableRequest = {
+  ...validRequest,
+  childBirthDate: "2010-06-24"
+} as const;
+
 describe("report services", () => {
   it("creates a local AI report draft with department advice and poster bullets", () => {
     const store = createMemoryStore();
@@ -61,8 +66,42 @@ describe("report services", () => {
     expect(draft.content.posterBullets.length).toBeGreaterThanOrEqual(2);
     expect(store.auditLogs.at(-1)).toMatchObject({
       action: "ai_report.created",
-      entityId: draft.id
+      entityId: draft.id,
+      payload: {
+        ruleEvaluationIds: store.ruleEvaluations.map((evaluation) => evaluation.id),
+        ruleSummaries: store.ruleEvaluations.map((evaluation) => ({
+          type: evaluation.type,
+          level: evaluation.level,
+          standardVersion: evaluation.standardVersion
+        })),
+        contentValidation: {
+          valid: true
+        }
+      }
     });
+  });
+
+  it("creates limited report content when every rule is unable to evaluate", () => {
+    const store = createMemoryStore();
+    const { checkup } = createCheckup(store, unableRequest, createdAt);
+
+    const draft = createReportDraft(store, checkup.id, createdAt);
+    const contentText = Object.values(draft.content).flat().join(" ");
+
+    expect(contentText).not.toContain("未发现需要重点干预的异常结果");
+    expect(contentText).not.toContain("未见明显异常");
+    expect(contentText).toMatch(/无法评估|暂无法评估/);
+    expect(draft.content.indicatorExplanation).toContain("出生日期无效或年龄不在支持范围");
+    expect(draft.content.departmentAdvice).toContain("儿童保健科");
+    expect(draft.content.departmentAdvice).toContain("眼科");
+  });
+
+  it("blocks draft creation when MVP rule evaluations are incomplete", () => {
+    const store = createMemoryStore();
+    const { checkup } = createCheckup(store, validRequest, createdAt);
+    store.ruleEvaluations = store.ruleEvaluations.filter((evaluation) => evaluation.type !== "vision_abnormality");
+
+    expect(() => createReportDraft(store, checkup.id, createdAt)).toThrow(/Missing rule evaluations: vision_abnormality/);
   });
 
   it("approves doctor review without changing stored rule levels", () => {
@@ -92,8 +131,22 @@ describe("report services", () => {
     );
     expect(store.auditLogs.at(-1)).toMatchObject({
       action: "doctor_review.approved",
-      entityId: review.id
+      entityId: review.id,
+      payload: {
+        doctorId: "doctor_1",
+        draftId: draft.id,
+        contentChanged: true,
+        approvedContentSectionKeys: Object.keys(editedContent)
+      }
     });
+  });
+
+  it("rejects blank doctor IDs at service level", () => {
+    const store = createMemoryStore();
+    const { checkup } = createCheckup(store, validRequest, createdAt);
+    const draft = createReportDraft(store, checkup.id, createdAt);
+
+    expect(() => approveDoctorReview(store, draft.id, "   ", draft.content, createdAt)).toThrow(/doctorId is required/);
   });
 });
 
@@ -141,6 +194,76 @@ describe("report routes", () => {
       expect(response.json()).toEqual({
         error: "not_found",
         message: "Report draft not found"
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns 404 for report draft creation from a missing checkup", async () => {
+    const app = await buildApp(createMemoryStore());
+
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/checkups/checkup_missing/report-drafts"
+      });
+
+      expect(response.statusCode).toBe(404);
+      expect(response.json()).toEqual({
+        error: "not_found",
+        message: "Checkup not found"
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns 409 when report draft creation is missing MVP rule evaluations", async () => {
+    const store = createMemoryStore();
+    const app = await buildApp(store);
+
+    try {
+      const { checkup } = createCheckup(store, validRequest, createdAt);
+      store.ruleEvaluations = store.ruleEvaluations.filter((evaluation) => evaluation.type !== "growth_delay");
+
+      const response = await app.inject({
+        method: "POST",
+        url: `/checkups/${checkup.id}/report-drafts`
+      });
+
+      expect(response.statusCode).toBe(409);
+      expect(response.json()).toEqual({
+        error: "conflict",
+        message: "Missing rule evaluations: growth_delay",
+        code: "rule_evaluations_incomplete",
+        missingTypes: ["growth_delay"]
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns normalized 400 for blank doctor IDs", async () => {
+    const store = createMemoryStore();
+    const app = await buildApp(store);
+
+    try {
+      const { checkup } = createCheckup(store, validRequest, createdAt);
+      const draft = createReportDraft(store, checkup.id, createdAt);
+
+      const response = await app.inject({
+        method: "POST",
+        url: `/report-drafts/${draft.id}/doctor-review`,
+        payload: {
+          doctorId: "   ",
+          editedContent: draft.content
+        }
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toMatchObject({
+        error: "validation_error"
       });
     } finally {
       await app.close();

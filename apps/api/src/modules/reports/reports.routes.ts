@@ -2,14 +2,20 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import { z, ZodError } from "zod";
 
 import type { MemoryStore } from "../../db/client.js";
-import { approveDoctorReview, createReportDraft, ReportNotFoundError } from "./reports.service.js";
+import {
+  approveDoctorReview,
+  createReportDraft,
+  ReportConflictError,
+  ReportNotFoundError,
+  ReportValidationError
+} from "./reports.service.js";
 
 const IdParamsSchema = z.object({
   id: z.string().min(1)
 });
 
 const DoctorReviewBodySchema = z.object({
-  doctorId: z.string().min(1),
+  doctorId: z.string().trim().min(1),
   editedContent: z.unknown()
 });
 
@@ -48,6 +54,15 @@ export async function registerReportRoutes(app: FastifyInstance, store: MemorySt
         });
       }
 
+      if (error instanceof ReportConflictError) {
+        return reply.code(409).send({
+          error: "conflict",
+          message: error.message,
+          code: error.code,
+          missingTypes: error.missingTypes
+        });
+      }
+
       throw error;
     }
   });
@@ -81,6 +96,14 @@ export async function registerReportRoutes(app: FastifyInstance, store: MemorySt
     } catch (error) {
       if (error instanceof ZodError) {
         return sendValidationError(reply, error);
+      }
+
+      if (error instanceof ReportValidationError) {
+        return reply.code(400).send({
+          error: "validation_error",
+          message: error.message,
+          issues: error.issues
+        });
       }
 
       throw error;
