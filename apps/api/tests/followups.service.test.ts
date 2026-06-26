@@ -108,10 +108,28 @@ describe("createFollowUpsForCheckup", () => {
       payload: {
         checkupId: "checkup_1",
         ruleEvaluationId: "checkup_1:rule:vision_abnormality",
+        level: "mild",
+        reason: tasks[1]?.reason,
+        status: "pending",
+        defaultFollowUpDays: 45,
         plannedAt: "2026-08-08T08:00:00.000Z"
       },
       createdAt: createdAt.toISOString()
     });
+  });
+
+  it("reuses existing follow-up tasks without writing duplicate audits", () => {
+    const store = createMemoryStore();
+    store.ruleEvaluations.push(ruleEvaluation());
+
+    const firstTasks = createFollowUpsForCheckup(store, "checkup_1", createdAt);
+    const secondTasks = createFollowUpsForCheckup(store, "checkup_1", createdAt);
+
+    expect(firstTasks).toHaveLength(1);
+    expect(secondTasks).toEqual(firstTasks);
+    expect(store.followUps).toHaveLength(1);
+    expect(store.followUps[0]).toEqual(firstTasks[0]);
+    expect(store.auditLogs.filter((entry) => entry.action === "followup.created")).toHaveLength(1);
   });
 });
 
@@ -139,5 +157,25 @@ describe("renderPosterSvg", () => {
     expect(svg).toContain("本内容为健康科普，不替代医生面诊。");
     expect(svg).not.toContain("儿童<健康>");
     expect(svg).not.toContain("少糖 & 多运动");
+  });
+
+  it("strips invalid XML control characters before rendering SVG text", () => {
+    const content: ParentReportContent = {
+      summary: "身高\u0000体重",
+      indicatorExplanation: "指标说明",
+      abnormalMeaning: "异常含义",
+      departmentAdvice: "科室建议",
+      homeIntervention: "家庭干预",
+      followUpAdvice: "复查建议",
+      posterTitle: "儿童\u0000健康提醒",
+      posterBullets: ["少糖\u0000多运动", "复查视力"]
+    };
+
+    const svg = renderPosterSvg(content);
+
+    expect(svg).not.toContain("\u0000");
+    expect(svg).toContain("儿童健康提醒");
+    expect(svg).toContain("身高体重");
+    expect(svg).toContain("少糖多运动");
   });
 });

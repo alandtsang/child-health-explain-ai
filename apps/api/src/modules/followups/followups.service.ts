@@ -34,9 +34,16 @@ export function createFollowUpsForCheckup(
     .filter((evaluation) => evaluation.checkupId === checkupId)
     .filter(needsFollowUp)
     .map((evaluation) => {
+      const id = followUpId(evaluation.id);
+      const existingTask = store.followUps.find((task) => task.ruleEvaluationId === evaluation.id || task.id === id);
+
+      if (existingTask) {
+        return existingTask;
+      }
+
       const plannedAt = addDays(at, evaluation.defaultFollowUpDays).toISOString();
       const task: FollowUpTask = {
-        id: followUpId(evaluation.id),
+        id,
         checkupId,
         ruleEvaluationId: evaluation.id,
         reason: `${evaluation.recommendedDepartment} ${evaluation.type} ${evaluation.level} 需要随访`,
@@ -54,7 +61,11 @@ export function createFollowUpsForCheckup(
           checkupId,
           ruleEvaluationId: evaluation.id,
           type: evaluation.type,
+          level: evaluation.level,
           recommendedDepartment: evaluation.recommendedDepartment,
+          reason: task.reason,
+          status: task.status,
+          defaultFollowUpDays: evaluation.defaultFollowUpDays,
           plannedAt: task.plannedAt,
           channel: task.channel
         },
