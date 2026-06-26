@@ -1,7 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": "src"
+    "rootDir": "src",
+    "paths": {
+      "@child-health/contracts": ["packages/contracts/dist/index.d.ts"]
+    }
   },
   "include": ["src/**/*.ts"]
 }
