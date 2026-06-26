@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 
 import { createMemoryStore, type MemoryStore } from "./db/client.js";
 import { registerCheckupRoutes } from "./modules/checkups/checkups.routes.js";
+import { registerReportRoutes } from "./modules/reports/reports.routes.js";
 
 export async function buildApp(store: MemoryStore = createMemoryStore()) {
   const app = Fastify({ logger: true });
@@ -34,6 +35,7 @@ export async function buildApp(store: MemoryStore = createMemoryStore()) {
   }));
 
   await registerCheckupRoutes(app, store);
+  await registerReportRoutes(app, store);
 
   return app;
 }

@@ -1,4 +1,4 @@
-import type { CheckupRecord } from "@child-health/contracts";
+import type { AiReportDraft, CheckupRecord, DoctorReview } from "@child-health/contracts";
 
 import type { RuleEvaluation } from "../modules/rules/rules.service.js";
 
@@ -15,8 +15,8 @@ type PlaceholderRecord = Record<string, unknown>;
 export type MemoryStore = {
   checkups: CheckupRecord[];
   ruleEvaluations: RuleEvaluation[];
-  aiDrafts: PlaceholderRecord[];
-  doctorReviews: PlaceholderRecord[];
+  aiDrafts: AiReportDraft[];
+  doctorReviews: DoctorReview[];
   followUps: PlaceholderRecord[];
   auditLogs: AuditLog[];
 };
