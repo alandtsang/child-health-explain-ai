@@ -1,0 +1,15 @@
+{
+  "pages": [
+    "src/pages/doctor/checkup-edit/checkup-edit",
+    "src/pages/doctor/review/review",
+    "src/pages/parent/self-check/self-check",
+    "src/pages/parent/report/report"
+  ],
+  "window": {
+    "navigationBarTitleText": "儿童体检解读",
+    "navigationBarBackgroundColor": "#0f766e",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f8fafc"
+  },
+  "sitemapLocation": "sitemap.json"
+}

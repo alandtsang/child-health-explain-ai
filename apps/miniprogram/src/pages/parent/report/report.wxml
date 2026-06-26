@@ -1,0 +1,6 @@
+<view class="page">
+  <view class="section">
+    <view class="title">体检科普报告</view>
+    <text class="body">请从医生分享链接或自查流程进入报告详情。</text>
+  </view>
+</view>

@@ -1,0 +1,15 @@
+<view class="page">
+  <view class="section">
+    <view class="title">医生端录入</view>
+    <input class="field" placeholder="儿童姓名" value="{{childName}}" bindinput="onNameInput" />
+    <picker mode="selector" range="{{sexOptions}}" range-key="label" value="{{sexIndex}}" bindchange="onSexChange">
+      <view class="field picker-value">{{sexOptions[sexIndex].label}}</view>
+    </picker>
+    <input class="field" placeholder="出生日期 YYYY-MM-DD" value="{{childBirthDate}}" bindinput="onBirthDateInput" />
+    <input class="field" placeholder="身高 cm" type="digit" value="{{heightCm}}" bindinput="onHeightInput" />
+    <input class="field" placeholder="体重 kg" type="digit" value="{{weightKg}}" bindinput="onWeightInput" />
+    <input class="field" placeholder="左眼视力" type="digit" value="{{leftVision}}" bindinput="onLeftVisionInput" />
+    <input class="field" placeholder="右眼视力" type="digit" value="{{rightVision}}" bindinput="onRightVisionInput" />
+    <button class="primary" loading="{{submitting}}" disabled="{{submitting}}" bindtap="submit">生成解读草稿</button>
+  </view>
+</view>

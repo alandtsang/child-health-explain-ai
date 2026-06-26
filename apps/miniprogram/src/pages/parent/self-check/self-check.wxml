@@ -1,0 +1,7 @@
+<view class="page">
+  <view class="section">
+    <view class="title">家长自查</view>
+    <text class="notice">本内容为健康科普，不替代医生面诊。</text>
+    <button class="primary" bindtap="startDemo">查看示例报告</button>
+  </view>
+</view>
