@@ -1,0 +1,12 @@
+{
+  "appid": "touristappid",
+  "projectname": "child-health-explain-ai",
+  "miniprogramRoot": "./",
+  "compileType": "miniprogram",
+  "setting": {
+    "es6": true,
+    "minified": false,
+    "postcss": true,
+    "urlCheck": false
+  }
+}

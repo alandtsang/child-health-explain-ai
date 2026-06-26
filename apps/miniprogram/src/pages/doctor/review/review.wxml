@@ -1,0 +1,20 @@
+<view class="page">
+  <view class="section">
+    <view class="title">医生审核</view>
+    <view wx:if="{{loading}}" class="muted">草稿生成中</view>
+    <block wx:else>
+      <view class="summary">{{summary}}</view>
+      <view class="label">指标说明</view>
+      <textarea class="field textarea" value="{{indicatorExplanation}}" bindinput="onIndicatorExplanationInput" />
+      <view class="label">异常含义</view>
+      <textarea class="field textarea" value="{{abnormalMeaning}}" bindinput="onAbnormalMeaningInput" />
+      <view class="label">科室建议</view>
+      <textarea class="field textarea" value="{{departmentAdvice}}" bindinput="onDepartmentAdviceInput" />
+      <view class="label">家庭干预</view>
+      <textarea class="field textarea" value="{{homeIntervention}}" bindinput="onHomeInterventionInput" />
+      <view class="label">复查建议</view>
+      <textarea class="field textarea" value="{{followUpAdvice}}" bindinput="onFollowUpAdviceInput" />
+      <button class="primary" loading="{{submitting}}" disabled="{{submitting || !draftId}}" bindtap="approve">确认审核</button>
+    </block>
+  </view>
+</view>
