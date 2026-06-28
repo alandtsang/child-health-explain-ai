@@ -23,7 +23,7 @@ export function request<T>(path: string, method: HttpMethod, data?: unknown): Pr
     wx.request({
       url: `${API_BASE_URL}${path}`,
       method,
-      data,
+      data: data ?? (method === "POST" ? {} : undefined),
       success: (res) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data as T);

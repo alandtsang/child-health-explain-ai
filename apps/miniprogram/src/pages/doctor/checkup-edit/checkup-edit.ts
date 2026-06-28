@@ -1,34 +1,6 @@
 import { request } from "../../../api/client";
-import type { ConfirmedMetric, CreateCheckupRequest, CreateCheckupResponse } from "../../../api/types";
-
-type SexOption = {
-  label: string;
-  value: "male" | "female";
-};
-
-const sexOptions: SexOption[] = [
-  { label: "男孩", value: "male" },
-  { label: "女孩", value: "female" }
-];
-
-function numberFromText(value: string): number {
-  return Number(value.trim());
-}
-
-function buildMetric(
-  key: ConfirmedMetric["key"],
-  value: number,
-  unit: ConfirmedMetric["unit"],
-  confirmedAt: string
-): ConfirmedMetric {
-  return {
-    key,
-    value,
-    unit,
-    confirmedBy: "doctor",
-    confirmedAt
-  };
-}
+import type { CreateCheckupResponse } from "../../../api/types";
+import { buildCheckupDraftRequest, sexOptions } from "./checkup-edit.form";
 
 Page({
   data: {
@@ -73,24 +45,18 @@ Page({
 
   async submit() {
     const now = new Date().toISOString();
-    const body: CreateCheckupRequest = {
-      childName: this.data.childName.trim(),
-      childSex: sexOptions[this.data.sexIndex].value,
-      childBirthDate: this.data.childBirthDate.trim(),
-      source: "doctor_manual",
-      metrics: [
-        buildMetric("heightCm", numberFromText(this.data.heightCm), "cm", now),
-        buildMetric("weightKg", numberFromText(this.data.weightKg), "kg", now),
-        buildMetric("leftVision", numberFromText(this.data.leftVision), "decimal_vision", now),
-        buildMetric("rightVision", numberFromText(this.data.rightVision), "decimal_vision", now)
-      ]
-    };
+    const result = buildCheckupDraftRequest(this.data, now);
+
+    if (!result.ok) {
+      wx.showToast({ icon: "none", title: result.message });
+      return;
+    }
 
     this.setData({ submitting: true });
 
     try {
-      const result = await request<CreateCheckupResponse>("/checkups", "POST", body);
-      wx.navigateTo({ url: `/src/pages/doctor/review/review?checkupId=${result.checkup.id}` });
+      const response = await request<CreateCheckupResponse>("/checkups", "POST", result.body);
+      wx.navigateTo({ url: `/src/pages/doctor/review/review?checkupId=${response.checkup.id}` });
     } catch (error) {
       wx.showToast({ icon: "none", title: "提交失败" });
     } finally {
