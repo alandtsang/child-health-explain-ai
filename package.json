@@ -6,6 +6,7 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
+    "typecheck:miniprogram": "tsc -p apps/miniprogram/tsconfig.json",
     "dev:api": "pnpm --filter @child-health/api dev"
   },
   "devDependencies": {

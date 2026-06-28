@@ -12,6 +12,7 @@ Page({
     rightVision: "",
     sexIndex: 0,
     sexOptions,
+    selectedSexLabel: sexOptions[0].label,
     submitting: false
   },
 
@@ -24,7 +25,10 @@ Page({
   },
 
   onSexChange(event: WechatMiniprogram.PickerChange) {
-    this.setData({ sexIndex: Number(event.detail.value) });
+    const sexIndex = Number(event.detail.value);
+    const selectedSexLabel = sexOptions[sexIndex]?.label ?? sexOptions[0].label;
+
+    this.setData({ sexIndex, selectedSexLabel });
   },
 
   onHeightInput(event: WechatMiniprogram.Input) {
@@ -47,7 +51,7 @@ Page({
     const now = new Date().toISOString();
     const result = buildCheckupDraftRequest(this.data, now);
 
-    if (!result.ok) {
+    if (result.ok === false) {
       wx.showToast({ icon: "none", title: result.message });
       return;
     }

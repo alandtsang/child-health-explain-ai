@@ -3,7 +3,7 @@
     <view class="title">医生端录入</view>
     <input class="field" placeholder="儿童姓名" value="{{childName}}" bindinput="onNameInput" />
     <picker mode="selector" range="{{sexOptions}}" range-key="label" value="{{sexIndex}}" bindchange="onSexChange">
-      <view class="field picker-value">{{sexOptions[sexIndex].label}}</view>
+      <view class="field picker-value">{{selectedSexLabel}}</view>
     </picker>
     <input class="field" placeholder="出生日期 YYYY-MM-DD" value="{{childBirthDate}}" bindinput="onBirthDateInput" />
     <input class="field" placeholder="身高 cm" type="digit" value="{{heightCm}}" bindinput="onHeightInput" />
